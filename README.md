@@ -6,10 +6,20 @@ I wrote this project to simulate the motion of n bodies (where n is an arbitrary
 ![Descrizione](doc/sim2.jpeg)
 
 ## Dependencies and project usage
-The project is written entirely in C and requires the `make` and `gcc` software. It also uses the OpenGL library `<GLFW/glfw3.h>`. This can be downloaded either from the official repositories (on Linux) or from the website: https://www.glfw.org/download.html
+The project is written entirely in C and requires the `make` and `gcc` software. It also uses the OpenGL library `<GLFW/glfw3.h>`. This can be downloaded either from the official repositories (on Linux recommended) or from the website: https://www.glfw.org/download.html.
 
+Alternatively, you can download the `glfw` library into the `vendor/glfw` folder using the command:
+```bash
+git submodule update --init --recursive
+```
+Then you need to compile the library using the commands, in `many-corp-simulation/`:
+```bash
+cd vendor/glfw
+cmake -B build
+cmake --build build
+```
 ---
-Once the files are been downloaded, you need to enter the folder `Many-corp-simulation/` and start the compilation with the command:  
+Once the files are been downloaded, you need to enter the folder `many-corp-simulation/` and start the compilation with the command:  
 
 ```bash
 make
@@ -48,7 +58,7 @@ Another variable that can be modified is the **number of dimensions**; to change
 ```c
 #define DIM 2
 ```
-the permitted values ​​are `DIM=[2,3,4]`, the third dimension is represented by the size of the particles, while the fourth is represented by the opacity of their color.
+The values ​​represented graphically ​​are `DIM=[2,3,4]`, the third dimension is represented by the size of the particles, while the fourth is represented by the opacity of their color. However, the program is generalized for any integer number of dimensions.
 
 ## Project composition
 The project is divided into the following folders:
@@ -65,3 +75,4 @@ The project is divided into the following folders:
     - `simlib_base.h`
 - `build/` --| The Makefile is located here, and the compilation results will end up here.
 - `doc/` -----| Here are the files useful for the README.md.
+- `vendor/`--| The `glfw` library is located here if downloaded manually.
