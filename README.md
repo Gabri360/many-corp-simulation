@@ -19,7 +19,7 @@ I wrote this project to simulate the motion of *N* bodies (where *N* is an arbit
 ![](doc/sim2.jpeg)
 
 ## Dependencies and Project Usage
-The project is written entirely in C and requires the `make` and `gcc` software. It also uses the OpenGL library `<GLFW/glfw3.h>`. This can be downloaded either from the official repositories (on Linux recommended) or from the website: https://www.glfw.org/download.html.
+The project is written entirely in C and requires the `make` and `gcc` software. It also uses the OpenGL library `<GLFW/glfw3.h>`. This can be downloaded either from the official repositories (on Linux) or from the website: https://www.glfw.org/.
 
 Alternatively, you can download the `glfw` library into the `vendor/glfw` folder using the command:
 ```bash
@@ -31,6 +31,9 @@ cd vendor/glfw
 cmake -B build
 cmake --build build
 ```
+
+For *Windows*, I've already placed the compiled binary in the `vendor/` folder. I recommend using the [MSYS2](https://www.msys2.org/) software for the terminal (UCRT64), and downloading `gcc` and `make` within it.
+
 ---
 Once the files are been downloaded, you need to enter the folder `many-corp-simulation/` and start the compilation with the command:
 
@@ -38,7 +41,7 @@ Once the files are been downloaded, you need to enter the folder `many-corp-simu
 make
 ```
 
-This will create a `sim` executable file (as well as object files in the `build/` folder). Then you have to run it from terminal with the command (on linux):
+This will create a `sim` executable file (as well as object files in the `build/` folder) or `sim.exe` if on *Windows*. Then you have to run it from terminal with the command (on linux):
 ```bash
 ./sim (parameter)
 ```
@@ -92,69 +95,100 @@ The project is divided into the following folders:
 
 ## Integration Methods
 In this section, I want to briefly explain the integration methods used. The goal is to solve the following differential equation (Newton's second law).
+
+
 ```math
 F(\vec{x_j})=m\frac{d^2\vec{x_j}}{dt^2}
 ```
+
+
 Where $F(x_j)$ is the force acting on the particle $j$ with position $\vec{x_j}$, which follows the law:
+
+
 ```math
-F(\vec{x_j})=\sum_{i \neq j}^N\left[G\,q_j\,q_i \dfrac{1}{(\vec{x_j}-\vec{x_i})^2}\;+\;\frac{2.4\cdot 10^C}{G}\left(\frac{5}{\vec{x_j}-\vec{x_i}}\right)^{13}\right]
+F(\vec{x_j})=\sum_{i \neq j}^N\left[G\,q_j\,q_i \dfrac{1}{(\vec{x_j}-\vec{x_i})^2}\hspace{1mm}+\hspace{1mm}\frac{2.4\cdot 10^C}{G}\left(\frac{5}{\vec{x_j}-\vec{x_i}}\right)^{13}\right]
 ```
+
+
 Where $N$ is the total number of particle and $C$ is a parameter that can be passed via the *config*. The first term is the **Coulomb force** and the second is a **repulsive potential** between all the particles, that becoming rilevant only when the distance becomes very small, to prevent the bodies from overlapping (which is the short-range term of the **Lennard-Jones potential**).
 
 ### Euler Method
 
+
 ```math
-\begin{align*}
-&\vec{v}(t+dt)=\vec{v}(t) + dt\;\frac{F(\vec{x})}{m} +O(dt^2)\\[4mm]
-&\vec{x}(t+dt)=\vec{x}(t) + dt\;\vec{v}(t+dt) + O(dt^2)
-\end{align*}
+\begin{aligned}
+\vec{v}(t+dt)=\vec{v}(t) + dt \hspace{1mm} \dfrac{F(\vec{x})}{m} +O(dt^2) \\\\
+\vec{x}(t+dt)=\vec{x}(t) + dt \hspace{1mm} \vec{v}(t+dt) + O(dt^2)
+\end{aligned}
 ```
+
 
 ### Verlet Velocity
 
+
 ```math
-\begin{align*}
-&\vec{x}(t+dt)=\vec{x}(t) + dt\;\vec{v}(t) + \frac{1}{2}dt^2\;\frac{F(\vec{x})}{m} + O(dt^3)\\[4mm]
-&\vec{v}(t+dt)=\vec{v}(t) + \frac{1}{2}dt\;\frac{F(\vec{x}(t))+F(\vec{x}(t+dt))}{m} +O(dt^2)
-\end{align*}
+\begin{aligned}
+&\vec{x}(t+dt)=\vec{x}(t) + dt\hspace{1mm}\vec{v}(t) + \frac{1}{2}dt^2\hspace{1mm}\frac{F(\vec{x})}{m} + O(dt^3) \\\\
+&\vec{v}(t+dt)=\vec{v}(t) + \frac{1}{2}dt\hspace{1mm}\frac{F(\vec{x}(t))+F(\vec{x}(t+dt))}{m} +O(dt^2)
+\end{aligned}
 ```
 
+
 ### Runge Kutta 4
-- step 1
-```math
-\begin{align*}
-&\vec{k}_{x,1}=\vec{v}(t)\\[4mm]
-&\vec{k}_{v,1}=\frac{F\left(\vec{x}(t)\right)}{m}
-\end{align*}
-```
-- step 2
-```math
-\begin{align*}
-&\vec{k}_{x,2}=\vec{v}(t)+\frac{dt}{2}\vec{k}_{v,1}\\[4mm]
-&\vec{k}_{v,2}=\frac{F\left(\vec{x}(t)+\frac{dt}{2}\vec{k}_{x,1}\right)}{m}
-\end{align*}
-```
-- step 3
-```math
-\begin{align*}
-&\vec{k}_{x,3}=\vec{v}(t)+\frac{dt}{2}\vec{k}_{v,2}\\[4mm]
-&\vec{k}_{v,3}=\frac{F\left(\vec{x}(t)+\frac{dt}{2}\vec{k}_{x,2}\right)}{m}
-\end{align*}
-```
-- step 4
-```math
-\begin{align*}
-&\vec{k}_{x,4}=\vec{v}(t)+dt\;\vec{k}_{v,3}\\[4mm]
-&\vec{k}_{v,4}=\frac{F\left(\vec{x}(t)+dt\;\vec{k}_{x,3}\right)}{m}
-\end{align*}
-```
-- final update
-```math
-\begin{align*}
-&\vec{x}(t+dt)=\vec{x}(t)+\frac{dt}{6}\left(\vec{k}_{x,1}+2\vec{k}_{x,2}+2\vec{k}_{x,3}+\vec{k}_{x,4}\right)+O(dt^5)\\[4mm]
-&\vec{v}(t+dt)=\vec{v}(t)+\frac{dt}{6}\left(\vec{k}_{v,1}+2\vec{k}_{v,2}+2\vec{k}_{v,3}+\vec{k}_{v,4}\right)+O(dt^5)
-\end{align*}
-```
+
+**Step 1**
+
+
+  ```math
+  \begin{aligned}
+  &\vec{k}_{x,1}=\vec{v}(t) \\\\
+  &\vec{k}_{v,1}=\frac{F\left(\vec{x}(t)\right)}{m}
+  \end{aligned}
+  ```
+
+
+**Step 2**
+
+
+  ```math
+  \begin{aligned}
+  &\vec{k}_{x,2}=\vec{v}(t)+\frac{dt}{2}\vec{k}_{v,1} \\\\
+  &\vec{k}_{v,2}=\frac{F\left(\vec{x}(t)+\frac{dt}{2}\vec{k}_{x,1}\right)}{m}
+  \end{aligned}
+  ```
+
+
+**step 3**
+
+
+  ```math
+  \begin{aligned}
+  &\vec{k}_{x,3}=\vec{v}(t)+\frac{dt}{2}\vec{k}_{v,2} \\\\
+  &\vec{k}_{v,3}=\frac{F\left(\vec{x}(t)+\frac{dt}{2}\vec{k}_{x,2}\right)}{m}
+  \end{aligned}
+  ```
+
+
+**step 4**
+
+
+  ```math
+  \begin{aligned}
+  &\vec{k}_{x,4}=\vec{v}(t)+dt\hspace{1mm}\vec{k}_{v,3} \\\\
+  &\vec{k}_{v,4}=\frac{F\left(\vec{x}(t)+dt\hspace{1mm}\vec{k}_{x,3}\right)}{m}
+  \end{aligned}
+  ```
+
+
+**Final update**
+
+
+  ```math
+  \begin{aligned} &\vec{x}(t+dt)=\vec{x}(t)+\frac{dt}{6}\left(\vec{k}_{x,1}+2\vec{k}_{x,2}+2\vec{k}_{x,3}+\vec{k}_{x,4}\right)+O(dt^5) \\\\ &\vec{v}(t+dt)=\vec{v}(t)+\frac{dt}{6}\left(\vec{k}_{v,1}+2\vec{k}_{v,2}+2\vec{k}_{v,3}+\vec{k}_{v,4}\right)+O(dt^5)
+  \end{aligned}
+  ```
+
+
 ### Runge Kutta 45
 This method implements both **Runge Kutta 4** and **Runge Kutta 5** and updates the integration step $dt$ based on the difference between the two results.
 the two results are:
@@ -162,11 +196,19 @@ the two results are:
 - $y^{(4)}$ solution with an error $O(dt^5)$
 
 Actual local error:
+
+
 ```math
 E=\left|\left|y^{(5)}-y^{(4)}\right|\right|
 ```
+
+
 If the local error exceeds a tolerance parameter $tol$ (by default it is set to $10^{-5}$), the integration step is updated.
+
+
 ```math
 dt_{new}=dt\cdot\left(\dfrac{tol}{E}\right)^{1/5}
 ```
+
+
 And the entire process is recalculated until $E < tol$, and the accepted solution will be $y^{(5)}$.

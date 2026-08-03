@@ -1,13 +1,14 @@
 CFLAGS=-O3 -ffast-math -funroll-loops -flto -pedantic -std=c99 -Wall -Wextra -Werror -Wconversion
-CFLAGS += -I../vendor/glfw/include
 
 CC = $(CROSS)gcc
 
 ifeq ($(OS),Windows_NT)
 	TARGET = sim.exe
-	LDFLAGS = -L../vendor/glfw/build/src -lglfw3 -lopengl32 -lgdi32 -luser32 -lshell32 -lm
+	CFLAGS += -I../vendor/glfw-win-prebuilt/include
+	LDFLAGS = -L../vendor/glfw-win-prebuilt/lib-mingw-w64 -lglfw3 -lopengl32 -lgdi32 -luser32 -lshell32 -lm
 else
 	TARGET = sim
+	CFLAGS += -I../vendor/glfw/include
 	LDFLAGS = -L../vendor/glfw/build/src -lglfw3 -lGL -lm
 endif
 
