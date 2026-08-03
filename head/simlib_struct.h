@@ -2,7 +2,7 @@
 #define SIMLIB_STRUCT
 #define MAX_TRAIL 3000
 #define MAX_ENERGY 3000
-#define DIM 5
+#define DIM 2
 
 typedef struct {
     double x[DIM];
@@ -24,7 +24,7 @@ typedef struct {
     int head,nb;
 }circ;
 
-typedef struct 
+typedef struct
 {
     double x[DIM];
     double a[DIM];
